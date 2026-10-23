@@ -43,7 +43,7 @@ fi
 
 # 5. Проверка доступности с проверкой сертификата (требование 6)
 echo "Проверка доступности ${SITE_URL}..."
-if ! curl -sSf --cacert "${CA_CERT}" -o /dev/null "${SITE_URL}"; then
+if ! curl -sSf -o /dev/null "${SITE_URL}"; then
     echo "Ошибка: ресурс ${SITE_URL} недоступен" >&2
     exit 1
 fi
