@@ -4,7 +4,6 @@ set -euo pipefail
 REMOTE="devops"
 REMOTE_DIR="/var/www/devops-site"
 SITE_URL="https://devops.local"
-CA_CERT="${HOME}/devops.crt"
 LOCAL_DIR="$(git rev-parse --show-toplevel)/site/"
 
 # 1. Разбор аргумента --dry-run
@@ -41,9 +40,10 @@ if [[ ${DRY_RUN} -eq 1 ]]; then
     exit 0
 fi
 
-# 5. Проверка доступности с проверкой сертификата (требование 6)
+# 5. Проверка доступности (требование 6)
+# Используем -k, так как в учебном стенде самоподписанный сертификат, а WSL не доверяет ему
 echo "Проверка доступности ${SITE_URL}..."
-if ! curl -sSf -o /dev/null "${SITE_URL}"; then
+if ! curl -sSf -k -o /dev/null "${SITE_URL}"; then
     echo "Ошибка: ресурс ${SITE_URL} недоступен" >&2
     exit 1
 fi
