@@ -36,5 +36,22 @@ check "Политика по умолчанию для входящего - deny
 echo "[3] Учётные записи"
 awk -F: ' $3>=1000 && $3<65534 {printf " %s (uid=%s)\n",$1,$3}' /etc/passwd
 
+echo "[4] Веб-сервер"
+# а) конфигурация nginx синтаксически корректна
+sudo nginx -t >/dev/null 2>&1
+check "Конфигурация Nginx корректна" "0" "$?"
+
+# б) сертификат истекает не ранее чем через 30 дней
+DAYS_LEFT=$(( ($(date -d "$(openssl x509 -in /etc/ssl/certs/devops.crt -noout -enddate | cut -d= -f2)" +%s) - $(date +%s)) / 86400 ))
+check "Сертификат действителен более 30 дней" "true" "$( [ "$DAYS_LEFT" -gt 30 ] && echo true || echo false )"
+
+# в) нет файлов, доступных для записи всем
+NO_WRITABLE=$(find /var/www/devops-site -perm -o+w | wc -l)
+check "Нет файлов с правом записи для всех" "0" "$NO_WRITABLE"
+
+# г) права ключа равны 600
+KEY_PERMS=$(sudo stat -c '%a' /etc/ssl/private/devops.key)
+check "Права ключа 600" "600" "$KEY_PERMS"
+
 echo "Пройдено: $PASS, не пройдено: $FAIL"
 [[ $FAIL -eq 0 ]] && exit 0 || exit 1
