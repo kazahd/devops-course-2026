@@ -31,3 +31,12 @@
 - `02-keys-configured` — после настройки SSH-ключей.
 - `03-ssh-hardened` — после hardening и UFW.
 - `04-dns-configured` — после настройки DNS.
+
+## 8. Веб-сервер
+- **Пакет:** `nginx`
+- **Конфигурация ресурса:** `/etc/nginx/sites-available/devops-site`
+- **Каталог ресурса:** `/var/www/devops-site`, владелец `devops:devops`, права `755` (для каталога), `644` (для файлов).
+- **Сертификат:** `/etc/ssl/certs/devops.crt` (права `644`, владелец `root`).
+- **Ключ:** `/etc/ssl/private/devops.key` (права `600`, владелец `root`).
+- **Команда формирования сертификата:** `sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/devops.key -out /etc/ssl/certs/devops.crt -subj "/CN=devops.local" -addext "subjectAltName=DNS:devops.local" -addext "basicConstraints=critical,CA:TRUE"`
+- **Срок действия:** 365 дней (1 год).
