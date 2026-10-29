@@ -53,5 +53,14 @@ check "Нет файлов с правом записи для всех" "0" "$N
 KEY_PERMS=$(sudo stat -c '%a' /etc/ssl/private/devops.key)
 check "Права ключа 600" "600" "$KEY_PERMS"
 
+echo "[5] Контейнеризация"
+check "Служба Docker активна" "active" "$(systemctl is-active docker)"
+DB_HEALTH=$(docker inspect -f '{{.State.Health.Status}}' app-db-1 2>/dev/null || echo "not_found")
+check "Контейнер СУБД healthy" "healthy" "$DB_HEALTH"
+BAD_PORTS=$(ss -tln | awk '$4 ~ /:5000$/ || $4 ~ /:5432$/ {if ($4 !~ /^127\.0\.0\.1:/) print $4}' | wc -l)
+check "Порты 5000 и 5432 только на 127.0.0.1" "0" "$BAD_PORTS"
+ENV_PERMS=$(stat -c '%a' ~/app/.env 2>/dev/null || echo "not_found")
+check "Права .env равны 600" "600" "$ENV_PERMS"
+
 echo "Пройдено: $PASS, не пройдено: $FAIL"
 [[ $FAIL -eq 0 ]] && exit 0 || exit 1
